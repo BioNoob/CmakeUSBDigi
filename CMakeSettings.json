@@ -1,0 +1,45 @@
+﻿{
+  "configurations": [
+    {
+      "name": "Test",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "intelliSenseMode": "linux-gcc-x86",
+      "remoteMachineName": "-1584412877;192.168.0.118 (username=root, port=22, authentication=Password)",
+      "remoteCMakeListsRoot": "/mnt/sda1/tce/.vs/${projectDirName}/${workspaceHash}/src",
+      "remoteBuildRoot": "/mnt/sda1/tce/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
+      "remoteInstallRoot": "/mnt/sda1/tce/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "rsync"
+    },
+    {
+      "name": "Testww",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "cmakeExecutable": "/usr/local/bin/cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_x86" ],
+      "remoteMachineName": "1392032384;192.168.0.132 (username=root, port=22, authentication=Password)",
+      "remoteCMakeListsRoot": "/mnt/sda1/tce/.vs/${projectDirName}/${workspaceHash}/src",
+      "remoteBuildRoot": "/mnt/sda1/tce/.vs/${projectDirName}/${workspaceHash}/out/build/${name}",
+      "remoteInstallRoot": "/mnt/sda1/tce/.vs/${projectDirName}/${workspaceHash}/out/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": true,
+      "remoteCopySourcesMethod": "sftp",
+      "intelliSenseMode": "linux-gcc-x86",
+      "remoteCopyUseCompilerDefaults": true
+    }
+  ]
+}
