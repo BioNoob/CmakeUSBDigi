@@ -89,7 +89,7 @@ void LocalDelay(int milsec) {
     // DigiUSB.print("HELP");
     // DigiUSB.println(helper, HEX);
     // DigiUSB.delay(500);
-    if ((last_read + 10 >= helper) || (helper >= last_read - 10)) {
+    if ((last_read + 10 >= helper) ^ (helper >= last_read - 10)) {
       if (!btn_pressed) {    //проверим есть ли нажатая уже.. необработанная. если нету будем менять значение
         btn_pressed = true;  //взвели флаг нажатой кнопки
         DigiUSB.println("CHANGE");
@@ -102,6 +102,23 @@ void LocalDelay(int milsec) {
 }
 
 int ii;
+
+void TimeOut() {
+  for (int i = 0; i < 4; i++) {
+    digitalWrite(0, LOW);
+    LocalDelay(150);
+    digitalWrite(0, HIGH);
+    LocalDelay(150);
+  }
+}
+void OkWrite() {
+  for (int i = 0; i < 2; i++) {
+    digitalWrite(0, LOW);
+    LocalDelay(100);
+    digitalWrite(0, HIGH);
+    LocalDelay(100);
+  }
+}
 
 void setup() {
   pinMode(0, OUTPUT);
@@ -121,17 +138,18 @@ void setup() {
 
 void loop() {
   while (DigiUSB.read() != HELLO_GET) {
-    ii++;
-    LocalDelay(100);
-    DigiUSB.println(ii, DEC);
-    if (ii > 5) {
-      ii = 0;
-      if (btn_pressed) {
-        digitalWrite(0, HIGH);
+    if (btn_pressed) {
+      ii++;
+      if (ii > 10) {
+        TimeOut();
+        //OkWrite();
+        last_read = analogRead(1);
         btn_pressed = false;
-        DigiUSB.println("TIMEOUT");
       }
+    } else {
+      ii = 0;
     }
+    LocalDelay(100);
     return;
   }
   DigiUSB.write(HELLO_SEND);
@@ -153,14 +171,9 @@ void loop() {
     LocalDelay(100);
   }
   if (_is_ok) {
-    digitalWrite(0, HIGH);
+    OkWrite();
   } else {  //TIMEOUT
-    for (int i = 0; i < 3; i++) {
-      LocalDelay(100);
-      digitalWrite(0, LOW);
-      LocalDelay(100);
-      digitalWrite(0, HIGH);
-    }
+    TimeOut();
   }
   //DigiUSB.delay(10);
   LocalDelay(10);
