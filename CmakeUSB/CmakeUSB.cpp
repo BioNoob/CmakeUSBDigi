@@ -1,11 +1,12 @@
 ﻿#include "CmakeUSB.h"
+#include <iostream>
 bool was_open;
-
+libusb_context* ctx;
 int TryWakeUp(libusb_device_handle*& outdevHandle)
 {
 	bool was_found = false;
 	libusb_device** list = NULL;
-	int count = libusb_get_device_list(NULL, &list);
+	int count = libusb_get_device_list(ctx, &list);
 	int rc = 0;
 	for (size_t idx = 0; idx < count; ++idx)
 	{
@@ -19,7 +20,7 @@ int TryWakeUp(libusb_device_handle*& outdevHandle)
 			if (!was_open)
 				if (libusb_open(device, &outdevHandle) == 0)
 				{
-					libusb_claim_interface(outdevHandle, 0);
+					libusb_claim_interface(outdevHandle, 1);
 					was_open = true;
 					break;
 				}
@@ -53,7 +54,8 @@ void Worker(libusb_device_handle* devHandle)
 		i = 0;
 		while (heandshake_r != HELLO_GET)
 		{
-			res = SendMSG(devHandle, heandshake_s);
+			res = SendMSG(devHandle, heandshake_s); //параметр задан неверно!
+			//https://stackoverflow.com/questions/52949762/libusb-c-format-of-usb-transfer-differs
 #ifdef WIN32
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 #else
@@ -87,9 +89,12 @@ void Worker(libusb_device_handle* devHandle)
 
 int main(int argc, char* argv[])
 {
+	setlocale(LC_ALL, "");
 	was_open = false;
 	int res = 0;
-	res = libusb_init(NULL);
+	libusb_context* ctx = NULL;
+	res = libusb_init(&ctx);
+	libusb_set_debug(ctx, 4);
 	libusb_device_handle* devHandle = NULL;
 	while (true)
 	{

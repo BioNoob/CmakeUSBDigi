@@ -8,15 +8,18 @@ project (CmakeUSB)
 # Добавьте источник в исполняемый файл этого проекта.
 add_executable (CmakeUSB "CmakeUSB.cpp" "CmakeUSB.h")
 
+
+
 FIND_PATH(LIBUSB_INCLUDE_DIR NAMES libusb.h
    HINTS
    /usr
    /usr/local
    /opt
-   C:/Users/bigja/source/repos/CmakeUSB/libusb-1.0.26/libusb
-   PATH_SUFFIXES libusb-1.0
+   ${CMAKE_SOURCE_DIR}/libusb-1.0.26 
+   PATH_SUFFIXES libusb
    )
    #   C:/Users/bigja/source/repos/CmakeUSB/MWin32/include WORKED!!!!!
+   
 if(WIN32)
   set(LIBUSB_NAME libusb-1.0.lib)
 else()
@@ -28,8 +31,13 @@ endif()
   /usr
   /usr/local
   /opt
-  C:/Users/bigja/source/repos/CmakeUSB/libusb-1.0.26/Win32
-)
+  ${CMAKE_SOURCE_DIR}/libusb-1.0.26 
+  PATH_SUFFIXES lib
+)  
+message(${LIBUSB_NAME})
+message(${LIBUSB_LIBRARY})
+message(${LIBUSB_INCLUDE_DIR})
+message(${CMAKE_SOURCE_DIR})
  #C:/Users/bigja/source/repos/CmakeUSB/MWin32/lib WORKED!!!!!
 target_include_directories(CmakeUSB PRIVATE ${LIBUSB_INCLUDE_DIR})
 target_link_libraries(CmakeUSB  PRIVATE ${LIBUSB_LIBRARY})

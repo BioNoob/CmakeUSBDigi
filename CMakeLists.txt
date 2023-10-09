@@ -11,8 +11,5 @@ project (CmakeUSB_HID)
 
 #include_directories("${PROJECT_SOURCE_DIR}/libusb-1.0")
 add_subdirectory (CmakeUSB)
-#add_subdirectory("${PROJECT_SOURCE_DIR}/libusb-1.0")
-#target_include_directories(CmakeUSB PRIVATE "${PROJECT_SOURCE_DIR}/libusb-1.0/")
-#target_link_directories(CmakeUSB PRIVATE "${PROJECT_SOURCE_DIR}/libusb-1.0")
-# Включите подпроекты.
+
 add_definitions( -D_CRT_SECURE_NO_WARNINGS )
