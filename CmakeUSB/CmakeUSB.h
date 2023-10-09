@@ -4,20 +4,47 @@
 #pragma once
 #include <stdio.h> // printf
 #include <stdint.h>
+#ifdef WIN32
+#include <libusb.h>
+#include <Windows.h>
+#include <chrono>
+#include <thread>
+#else
 #include <unistd.h>
 #include <usb.h>
+#endif // WIN32
+
+
+
 #define MSG_SEND (0x01 << 5)
 #define MSG_GET (0x01 << 5) | 0x80
 #define HELLO_GET  0x35 //'5'
 #define HELLO_SEND 0x53 //'S'
-int GetMSG(usb_dev_handle* devHandle, char* msg)
+#define printf printf2
+
+int GetMSG(libusb_device_handle* devHandle, unsigned char* msg)
 {
-	return usb_control_msg(devHandle, MSG_GET, 0x01, 0, 0, msg, 1, 1000);
+	return libusb_control_transfer(devHandle, MSG_GET, 0x01, 0, 0, msg, 1, 1000);
+	//return usb_control_msg(devHandle, MSG_GET, 0x01, 0, 0, msg, 1, 1000);
 }
 
-int SendMSG(usb_dev_handle* devHandle, char msg)
+int SendMSG(libusb_device_handle* devHandle, unsigned char msg)
 {
-	return usb_control_msg(devHandle, MSG_SEND, 0x09, 0, msg, 0, 0, 1000);
+	return libusb_control_transfer(devHandle, MSG_SEND, 0x09, 0, 0, &msg, 0, 1000);
+	//return usb_control_msg(devHandle, MSG_SEND, 0x09, 0, msg, 0, 0, 1000);
+}
+int __cdecl printf2(const char* format, ...)
+{
+	char str[1024];
+
+	va_list argptr;
+	va_start(argptr, format);
+	int ret = vsnprintf(str, sizeof(str), format, argptr);
+	va_end(argptr);
+
+	OutputDebugStringA(str);
+
+	return ret;
 }
 
 uint32_t g_GetMaskedValue(uint32_t nValue, uint32_t mask)
@@ -31,14 +58,14 @@ uint32_t g_GetMaskedValue(uint32_t nValue, uint32_t mask)
 	}
 	return nValue;
 }
-enum TUVK : uint8_t 
+enum class TUVK : uint8_t 
 {
 	UNKN = 0b00000000,
 	MI28 = 0b00010000,
 	KA52 = 0b00100000,
 	SU25 = 0b01000000
 };
-enum ASP : uint8_t 
+enum class ASP : uint8_t 
 {
 	UN = 0b0000,  //UNKNOWN
 	PU = 0b0001,  //GUN
