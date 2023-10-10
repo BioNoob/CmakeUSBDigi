@@ -10,18 +10,18 @@ add_executable (CmakeUSB "CmakeUSB.cpp" "CmakeUSB.h")
 
 
 
-FIND_PATH(LIBUSB_INCLUDE_DIR NAMES libusb.h
+FIND_PATH(LIBUSB_INCLUDE_DIR NAMES lusb0_usb.h
    HINTS
-   /usr
-   /usr/local
-   /opt
-   ${CMAKE_SOURCE_DIR}/libusb-1.0.26 
-   PATH_SUFFIXES libusb
+   #/usr
+   #/usr/local
+   #/opt
+   ${CMAKE_SOURCE_DIR}/libusb
+   PATH_SUFFIXES src
    )
    #   C:/Users/bigja/source/repos/CmakeUSB/MWin32/include WORKED!!!!!
    
 if(WIN32)
-  set(LIBUSB_NAME libusb-1.0.lib)
+  set(LIBUSB_NAME libusb0)
 else()
   set(LIBUSB_NAME usb-1.0)
 endif()
@@ -31,7 +31,7 @@ endif()
   /usr
   /usr/local
   /opt
-  ${CMAKE_SOURCE_DIR}/libusb-1.0.26 
+  ${CMAKE_SOURCE_DIR}/libusb 
   PATH_SUFFIXES lib
 )  
 message(${LIBUSB_NAME})
