@@ -263,8 +263,6 @@ int TryWakeUp(usb_dev_handle*& outdevHandle)
 	if (!was_found && was_open)
 	{
 		usb_close(outdevHandle);
-		//free(outdevHandle);
-		outdevHandle = NULL;
 		was_open = false;
 		was_heandshaked = false;
 		return 0;
@@ -277,10 +275,10 @@ int TryWakeUp(usb_dev_handle*& outdevHandle)
 void Worker(usb_dev_handle* devHandle)
 {
 	int res;
-	char heandshake_r = 0x0;
-	char heandshake_s = HELLO_SEND;
-	char data_r = 0x0;
-	char data_s = 0x0;
+	uint8_t heandshake_r = 0x0;
+	uint8_t heandshake_s = HELLO_SEND;
+	uint8_t data_r = 0x0;
+	uint8_t data_s = 0x0;
 	res = -1;
 	int i = 0;
 	TUVK tvk = TUVK::UNKN;
@@ -294,11 +292,11 @@ void Worker(usb_dev_handle* devHandle)
 			res = SendMSG(devHandle, heandshake_s);
 			while (heandshake_r != HELLO_GET)
 			{
-				usleep(100 * 1000);
+				usleep(50 * 1000);
 				res = GetMSG(devHandle, &heandshake_r);
 				i++;
 				//if (heandshake_r != 0x0)
-				//	printf("HENDSHAKE %x\n", heandshake_r);
+				printf("HENDSHAKE %x\n", heandshake_r);
 				if (i > 10) // device unplaged or TO
 				{
 					printf("TimeOut\n");
@@ -311,38 +309,61 @@ void Worker(usb_dev_handle* devHandle)
 		}
 		//END HENDSHAKE
 		//usleep(1000 * 300);
+
 		i = 0;
-		while (data_r == 0x0)
+		while (data_r != SYNC)
 		{
-			res = GetMSG(devHandle, &data_r);
+			res = GetMSG(devHandle, &data_r); //ждем синк сигнал
+			//printf("%d SYNC RECIVED %x\n",i, data_r);
 			usleep(100 * 1000);
 			i++;
-			if (i > 50) // device unplaged or TO
+			if (i > 20) // device unplaged or TO
 			{
-				printf("TimeOut\n");
+				printf("TimeOut SYNC 1\n");
 				was_heandshaked = false;
 				return;
 			}
 		}
-		
-		//printf("RECIVED %x\n", data_r);
+		res = SendMSG(devHandle, SYNC);//шлем СИНК
+		//usleep(10 * 1000);
+		res = 0;
+		while (res == 0)
+		{
+			res = GetMSG(devHandle, &data_r); //ждем данные
+		}
 
+		//printf("RECIVED %x\n", data_r);И
 		tvk = static_cast<TUVK>(g_GetMaskedValue(data_r, 0xF0));
 		asp = static_cast<ASP>(g_GetMaskedValue(data_r, 0x0F));
-		printf("TUVK %d ASP %d\n", tvk, asp);
+		if (tvk != TUVK::UNKN && asp != ASP::UN)
+			printf("TUVK %d ASP %d\n", tvk, asp);
 		data_s = data_r;
-		usleep(1000 * 100);
-		res = SendMSG(devHandle, data_s);
+
+		res = SendMSG(devHandle, SYNC);//шлем СИНК
+		i = 0;
+		while (data_r != SYNC)
+		{
+			res = GetMSG(devHandle, &data_r); //ждем синк сигнал
+			usleep(100 * 1000);
+			i++;
+			if (i > 20)
+			{
+				printf("TimeOut SYNC 2\n");
+				was_heandshaked = false;
+				return;
+			}
+		}
+		res = SendMSG(devHandle, data_s); //отправляем квиток
+		//printf("SENDED %x\n", data_s);
 		//DEBUG
 		res = 1;
 		while (res > 0)
 		{
-			usleep(1000 * 100);
+			//usleep(1000 * 100);
+			//освобождаем буфер, хуяча со скоростью процессора
 			data_r = 0;
 			res = GetMSG(devHandle, &data_r);
-			printf("REPEATED %x\n", data_r);
 		}
-		
 		//
 		data_r = data_s = heandshake_r = 0;
 	}

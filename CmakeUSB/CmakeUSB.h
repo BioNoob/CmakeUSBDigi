@@ -21,6 +21,7 @@
 #define MSG_GET (0x01 << 5) | 0x80
 #define HELLO_GET  0x35 //'5'
 #define HELLO_SEND 0x53 //'S'
+#define SYNC 0xEE
 #define printf printf2
 #define usleep _usleep
 
@@ -50,10 +51,10 @@ int __cdecl printf2(const char* format, ...)
 
 
 
-int GetMSG(usb_dev_handle* devHandle, char* msg)
+int GetMSG(usb_dev_handle* devHandle, unsigned char* msg)
 {
 	//return libusb_control_transfer(devHandle, MSG_GET, 0x01, 0, 0, msg, 4, 1000);
-	return usb_control_msg(devHandle, MSG_GET, 0x01, 0, 0, msg, 1, 1000);
+	return usb_control_msg(devHandle, MSG_GET, 0x01, 0, 0, (char*)msg, 1, 1000);
 }
 
 int SendMSG(usb_dev_handle* devHandle, unsigned char msg)
