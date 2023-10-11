@@ -53,6 +53,38 @@ void setup() {
 }
 
 void loop() {
+  //TEST straight
+  // LocalDelay(10);
+  // uint8_t heandshake_r = 0x0;
+  // uint8_t heandshake_s = HELLO_SEND;
+  // uint8_t data_r = 0x0;
+  // uint8_t data_s = 0x0;
+  // heandshake_r = DigiUSB.read();
+  // if (heandshake_r != HELLO_GET) {
+  //   return;
+  // }
+  // DigiUSB.write(heandshake_s);
+  // DigiUSB.write(SYNC);
+  // data_r = DigiUSB.read();
+  // if (data_r != SYNC) {
+  //   return;
+  // }
+  // data_r = 0;
+  // GetUvkAsp(analogRead(1), &type_asp, &type_uvk);
+  // data_s = (uint8_t)type_uvk | (uint8_t)type_asp;
+  // DigiUSB.write(data_s);  //отправляем данные
+  // data_r = DigiUSB.read();
+  // if (data_r != SYNC) {
+  //   return;
+  // }
+  // DigiUSB.write(SYNC);
+  // data_r = DigiUSB.read();
+  // if (data_r != data_s) {
+  //   TimeOut();
+  // } else {
+  //   OkWrite();
+  // }
+  // return;
   //HENDSHAKE
   if (!was_open) {
     int ii = 0;
