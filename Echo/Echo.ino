@@ -53,7 +53,7 @@ void setup() {
 }
 
 void loop() {
-   LocalDelay(50);
+  LocalDelay(50);
   // //TEST2
   // uint8_t getter = 0;
   // uint8_t outter = 0;
@@ -137,9 +137,6 @@ void loop() {
   out = (uint8_t)type_uvk | (uint8_t)type_asp;
   DigiUSB.write(out);  //отправляем данные
   i = 0;
-  //шлем синк
-  DigiUSB.write((uint8_t)SYNC);
-  //ждем синк
   while (DigiUSB.read() != SYNC) {
     LocalDelay(50);
     i++;
@@ -148,19 +145,27 @@ void loop() {
       return;
     }
   }
+  //шлем синк
+  DigiUSB.write((uint8_t)SYNC);
+  //ждем синк
+
   i = 0;
-  ASP asp = ASP::UN;
-  TUVK tvk = TUVK::UNKN;
+  uint8_t asp = 0;
+  uint8_t tvk = 0;
   _is_ok = true;
-  while((uint8_t)asp != (uint8_t)type_asp || (uint8_t)tvk != (uint8_t)type_uvk)
-  {
+  while (asp != (uint8_t)type_asp || tvk != (uint8_t)type_uvk) {
     LocalDelay(10);
     read = 0;
     read = DigiUSB.read();
-    tvk = (TUVK)((read & 0xF0));
-    asp = (ASP)((read & 0xF0) << 4);
+    tvk = read & 0xF0;
+    asp = (read & 0x0F);
+    // DigiUSB.write((uint8_t)tvk);
+    // DigiUSB.write((uint8_t)asp);
+    // DigiUSB.write((uint8_t)asp != (uint8_t)type_asp || (uint8_t)tvk != (uint8_t)type_uvk);
+    //DigiUSB.write(read);
     if(i > 100)
-    {
+    DigiUSB.write(out);
+    if (i > 200) {
       _is_ok = false;
       break;
     }
@@ -175,7 +180,7 @@ void loop() {
   } else {  //TIMEOUT
     was_open = false;
     if (btn_pressed) {
-    TimeOut();
+      TimeOut();
     }
   }
   _is_ok = false;

@@ -2,6 +2,34 @@
 #include <iostream>
 bool was_open;
 bool was_heandshaked;
+
+bool DataCheck(uint8_t data)
+{
+	uint8_t h, l = 0;
+	h = data & 0xf0;
+	l = data & 0x0f;
+	switch (h)
+	{
+	case 0b00010000:
+	case 0b00100000:
+	case 0b01000000:
+		switch (l)
+		{
+		case 0b0000:
+		case 0b0001: //GUN
+		case 0b0010:  //C8
+		case 0b0011:  //UR-A
+		case 0b0100:  //BOMBA
+			return true;
+		default:
+			return false;
+		}
+		break;
+	default:
+		return false;
+	}
+}
+
 int TryWakeUp(usb_dev_handle*& outdevHandle)
 {
 	bool was_found = false;
@@ -114,8 +142,7 @@ void Worker(usb_dev_handle* devHandle)
 				heandshake_r = 0;
 				res = GetMSG(devHandle, &heandshake_r);
 				i++;
-				//if (heandshake_r != 0x0)
-				printf("HENDSHAKE %x\n", heandshake_r);
+				//printf("HENDSHAKE %x\n", heandshake_r);
 				if (i > 10) // device unplaged or TO
 				{
 					printf("TimeOut\n");
@@ -134,7 +161,9 @@ void Worker(usb_dev_handle* devHandle)
 		{
 			data_r = 0;
 			res = GetMSG(devHandle, &data_r); //ждем синк сигнал
-			printf("%d SYNC1 RECIVED %x\n",i, data_r);
+		printf("%d SYNC1 RECIVED %x\n",i, data_r);
+			if (DataCheck(data_r))
+				goto getter;
 			usleep(100 * 1000);
 			i++;
 			if (i > 20) // device unplaged or TO
@@ -154,9 +183,11 @@ void Worker(usb_dev_handle* devHandle)
 		{
 			res = GetMSG(devHandle, &data_r);
 			//
-			//printf("DATA RECIVED %x\n", data_r);
+			printf("DATA RECIVED %x\n", data_r);
 		}
-		 //ждем данные
+		//ждем данные
+		//goto 
+	getter:
 		printf("RECIVED %x\n", data_r);
 		tvk = static_cast<TUVK>(g_GetMaskedValue(data_r, 0xF0));
 		asp = static_cast<ASP>(g_GetMaskedValue(data_r, 0x0F));
@@ -164,7 +195,9 @@ void Worker(usb_dev_handle* devHandle)
 			printf("TUVK %d ASP %d\n", tvk, asp);
 		data_s = data_r;
 		i = 0;
-		printf("wait SYNC 2\n");
+		//printf("send SYNC 2\n");
+		res = SendMSG(devHandle, SYNC);//шлем СИНК
+		//printf("wait SYNC 2\n");
 		while (data_r != SYNC)
 		{
 			res = GetMSG(devHandle, &data_r); //ждем синк сигнал
@@ -177,21 +210,22 @@ void Worker(usb_dev_handle* devHandle)
 				return;
 			}
 		}
-		printf("send SYNC 2\n");
-		res = SendMSG(devHandle, SYNC);//шлем СИНК
-		usleep(100 * 1000);
-		printf("send DATA %x\n", data_s);
+
+
+		//usleep(100 * 1000);
+		//printf("send DATA %x\n", data_s);
 		res = SendMSG(devHandle, data_s); //отправляем квиток
 
 		//printf("SENDED %x\n", data_s);
 		//DEBUG
 		res = 1;
-		printf("CLEAR BUFFER\n");
+		//printf("CLEAR BUFFER\n");
 		while (res > 0)
 		{
 			//освобождаем буфер, хуяча со скоростью процессора
 			data_r = 0;
 			res = GetMSG(devHandle, &data_r);
+			//printf("CLEAR READ %x\n", data_r);
 		}
 		//
 		data_r = data_s = heandshake_r = 0;
