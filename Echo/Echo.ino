@@ -53,38 +53,51 @@ void setup() {
 }
 
 void loop() {
-  //TEST straight
-  // LocalDelay(10);
-  // uint8_t heandshake_r = 0x0;
-  // uint8_t heandshake_s = HELLO_SEND;
-  // uint8_t data_r = 0x0;
-  // uint8_t data_s = 0x0;
-  // heandshake_r = DigiUSB.read();
-  // if (heandshake_r != HELLO_GET) {
-  //   return;
+   LocalDelay(50);
+  // //TEST2
+  // uint8_t getter = 0;
+  // uint8_t outter = 0;
+  // outter = (uint8_t)type_uvk | (uint8_t)type_asp;
+  // while (DigiUSB.read() != -1) {
+  //   //LocalDelay(10);
   // }
-  // DigiUSB.write(heandshake_s);
-  // DigiUSB.write(SYNC);
-  // data_r = DigiUSB.read();
-  // if (data_r != SYNC) {
-  //   return;
+  // DigiUSB.write(outter);  //отправляем данные
+  // LocalDelay(500);
+  // int iw = 0;
+  // ASP asp = ASP::UN;
+  // TUVK tvk = TUVK::UNKN;
+  // _is_ok = true;
+  // //GetUvkAsp(analogRead(1), &type_asp, &type_uvk);
+  // while ((uint8_t)asp != (uint8_t)type_asp || (uint8_t)tvk != (uint8_t)type_uvk) {
+  //   iw++;
+  //   LocalDelay(50);
+  //   //DigiUSB.print(iw,DEC);
+  //   if (iw > 40) {
+  //     _is_ok = false;
+  //     break;
+  //   } else {
+  //     getter = DigiUSB.read();
+  //     //DigiUSB.write(getter);
+  //     tvk = (TUVK)((getter & 0xF0));
+  //     asp = (ASP)((getter & 0xF0) << 4);
+  //   }
   // }
-  // data_r = 0;
-  // GetUvkAsp(analogRead(1), &type_asp, &type_uvk);
-  // data_s = (uint8_t)type_uvk | (uint8_t)type_asp;
-  // DigiUSB.write(data_s);  //отправляем данные
-  // data_r = DigiUSB.read();
-  // if (data_r != SYNC) {
-  //   return;
-  // }
-  // DigiUSB.write(SYNC);
-  // data_r = DigiUSB.read();
-  // if (data_r != data_s) {
+  // // }
+  // if (_is_ok) {
+  //   DigiUSB.write(SYNC);
+  //   if (btn_pressed) {
+  //     OkWrite();
+  //   }
+  // } else {  //TIMEOUT
+  //   //DigiUSB.write(0xED);
   //   TimeOut();
-  // } else {
-  //   OkWrite();
   // }
+  // //DigiUSB.write(0xb8);
+  // //_is_ok = false;
+  // btn_pressed = false;
   // return;
+
+
   //HENDSHAKE
   if (!was_open) {
     int ii = 0;
@@ -114,38 +127,46 @@ void loop() {
   DigiUSB.write((uint8_t)SYNC);
   //ждем синк
   while (DigiUSB.read() != SYNC) {
-    LocalDelay(100);
+    LocalDelay(50);
     i++;
     if (i > 20) {
       was_open = false;
       return;
     }
   }
-
-  LocalDelay(10);
   out = (uint8_t)type_uvk | (uint8_t)type_asp;
   DigiUSB.write(out);  //отправляем данные
-                       //ждем синк
   i = 0;
+  //шлем синк
+  DigiUSB.write((uint8_t)SYNC);
+  //ждем синк
   while (DigiUSB.read() != SYNC) {
-    LocalDelay(100);
+    LocalDelay(50);
     i++;
     if (i > 20) {
       was_open = false;
       return;
     }
   }
-  //шлем синк
-  DigiUSB.write((uint8_t)SYNC);
-  //ждем квиток
-  for (int i = 0; i < 100; i++) {
+  i = 0;
+  ASP asp = ASP::UN;
+  TUVK tvk = TUVK::UNKN;
+  _is_ok = true;
+  while((uint8_t)asp != (uint8_t)type_asp || (uint8_t)tvk != (uint8_t)type_uvk)
+  {
     LocalDelay(10);
+    read = 0;
     read = DigiUSB.read();
-    if (read == out) {
-      _is_ok = true;
+    tvk = (TUVK)((read & 0xF0));
+    asp = (ASP)((read & 0xF0) << 4);
+    if(i > 100)
+    {
+      _is_ok = false;
       break;
     }
+    i++;
   }
+  //ждем квиток
 
   if (_is_ok) {
     if (btn_pressed) {
@@ -153,7 +174,9 @@ void loop() {
     }
   } else {  //TIMEOUT
     was_open = false;
+    if (btn_pressed) {
     TimeOut();
+    }
   }
   _is_ok = false;
   btn_pressed = false;

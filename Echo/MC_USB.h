@@ -35,6 +35,17 @@ void OkWrite() {
     LocalDelay(200);
   }
 }
+uint8_t g_GetMaskedValue(uint32_t nValue, uint32_t mask)
+{
+	nValue = nValue & mask;
+	uint32_t bMask = 1;
+	while ((mask & bMask) == 0)
+	{
+		nValue = nValue >> 1;
+		mask = mask >> 1;
+	}
+	return nValue;
+}
 void GetUvkAsp(int analog, ASP *t_asp, TUVK *t_uvk) {
   switch (*t_uvk) {
     case TUVK::MI28:

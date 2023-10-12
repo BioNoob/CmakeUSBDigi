@@ -25,7 +25,7 @@ int TryWakeUp(usb_dev_handle*& outdevHandle)
 			if ((device->descriptor.idVendor == 0x16c0) && (device->descriptor.idProduct == 0x05df))
 			{
 				was_found = true;
-				//printf("Detected DigiSpark... \n");
+				printf("Detected DigiSpark... \n");
 				if (!was_open)
 				{
 					struct usb_dev_handle* devHandle = NULL;
@@ -60,7 +60,7 @@ int TryWakeUp(usb_dev_handle*& outdevHandle)
 }
 void Worker(usb_dev_handle* devHandle)
 {
-	int res;
+	int res = 0;
 	uint8_t heandshake_r = 0x0;
 	uint8_t heandshake_s = HELLO_SEND;
 	uint8_t data_r = 0x0;
@@ -69,48 +69,38 @@ void Worker(usb_dev_handle* devHandle)
 	int i = 0;
 	TUVK tvk = TUVK::UNKN;
 	ASP asp = ASP::UN;
+	//TEST2
+	//while (true)
+	//{
+	//	i = 0;
+	//	res = 0;
+	//	while (res == 0)
+	//	{
+	//		res = GetMSG(devHandle, &data_r);
+	//		tvk = static_cast<TUVK>(g_GetMaskedValue(data_r, 0xF0));
+	//		asp = static_cast<ASP>(g_GetMaskedValue(data_r, 0x0F));
+	//	}
 
-	//TEST straight
-	//printf("LOOP\n");
-	//res = SendMSG(devHandle, heandshake_s);
-	//res = GetMSG(devHandle, &heandshake_r);
-	//if (heandshake_r != HELLO_GET || res <= 0)
-	//{
-	//	//printf("NOT HELLO\n");
-	//	return;
-	//}
-	//res = GetMSG(devHandle, &data_r); //ждем синк сигнал
-	//if (data_r != SYNC || res <= 0)
-	//{
-	//	//printf("NOT SYNC 1\n");
-	//	return;
-	//}
-	//res = SendMSG(devHandle, SYNC);//шлем СИНК
-	//data_r = 0;
-	//res = GetMSG(devHandle, &data_r);
-	//if (res <= 0) 
-	//{
-	//	//printf("NOT DATA\n");
-	//	return;
-	//}
-	//tvk = static_cast<TUVK>(g_GetMaskedValue(data_r, 0xF0));
-	//asp = static_cast<ASP>(g_GetMaskedValue(data_r, 0x0F));
-	//if (tvk != TUVK::UNKN && asp != ASP::UN)
+	//	//if (tvk != TUVK::UNKN && asp != ASP::UN)
 	//	printf("TUVK %d ASP %d\n", tvk, asp);
-	//data_s = data_r;
-	//res = SendMSG(devHandle, SYNC);//шлем СИНК
-	//data_r = 0;
-	//res = GetMSG(devHandle, &data_r);//ждем синк сигнал
-	//if (data_r != SYNC || res <= 0)
-	//{
-	//	//printf("NOT SYNC 2\n");
-	//	return;
+	//	data_s = data_r;
+	//	res = SendMSG(devHandle, data_s);
+	//	printf("SEND %d\n", data_s);
+	//	data_r = 0;
+	//	while (data_r != SYNC)
+	//	{
+	//		i++;
+	//		usleep(50 * 1000);
+	//		res = GetMSG(devHandle, &data_r);
+	//		if (i > 100)
+	//		{
+	//			printf("GET %x\n", data_r);
+	//			printf("TO\n");
+	//			return;
+	//		}
+	//	}
 	//}
-	//res = SendMSG(devHandle, data_s); //шлем данную
-	//printf("END\n");
-	//usleep(10 * 1000);
 	//return;
-
 	while (true)
 	{
 		printf("LOOP\n");
@@ -144,7 +134,7 @@ void Worker(usb_dev_handle* devHandle)
 		{
 			data_r = 0;
 			res = GetMSG(devHandle, &data_r); //ждем синк сигнал
-			//printf("%d SYNC RECIVED %x\n",i, data_r);
+			printf("%d SYNC1 RECIVED %x\n",i, data_r);
 			usleep(100 * 1000);
 			i++;
 			if (i > 20) // device unplaged or TO
@@ -154,23 +144,27 @@ void Worker(usb_dev_handle* devHandle)
 				return;
 			}
 		}
+		printf("send SYNC 1\n");
 		res = SendMSG(devHandle, SYNC);//шлем СИНК
 		//usleep(10 * 1000);
 		res = 0;
-		while (res == 0)
+		data_r = 0;
+		printf("read data\n");
+		while (data_r == 0 || data_r == SYNC || data_r == HELLO_GET)
 		{
-			res = GetMSG(devHandle, &data_r); //ждем данные
+			res = GetMSG(devHandle, &data_r);
+			//
+			//printf("DATA RECIVED %x\n", data_r);
 		}
-
-		//printf("RECIVED %x\n", data_r);И
+		 //ждем данные
+		printf("RECIVED %x\n", data_r);
 		tvk = static_cast<TUVK>(g_GetMaskedValue(data_r, 0xF0));
 		asp = static_cast<ASP>(g_GetMaskedValue(data_r, 0x0F));
 		if (tvk != TUVK::UNKN && asp != ASP::UN)
 			printf("TUVK %d ASP %d\n", tvk, asp);
 		data_s = data_r;
-
-		res = SendMSG(devHandle, SYNC);//шлем СИНК
 		i = 0;
+		printf("wait SYNC 2\n");
 		while (data_r != SYNC)
 		{
 			res = GetMSG(devHandle, &data_r); //ждем синк сигнал
@@ -183,13 +177,18 @@ void Worker(usb_dev_handle* devHandle)
 				return;
 			}
 		}
+		printf("send SYNC 2\n");
+		res = SendMSG(devHandle, SYNC);//шлем СИНК
+		usleep(100 * 1000);
+		printf("send DATA %x\n", data_s);
 		res = SendMSG(devHandle, data_s); //отправляем квиток
+
 		//printf("SENDED %x\n", data_s);
 		//DEBUG
 		res = 1;
+		printf("CLEAR BUFFER\n");
 		while (res > 0)
 		{
-			//usleep(1000 * 100);
 			//освобождаем буфер, хуяча со скоростью процессора
 			data_r = 0;
 			res = GetMSG(devHandle, &data_r);
@@ -212,6 +211,7 @@ int main(int argc, char* argv[])
 			printf("DIGI NF.. SLEEP\n");
 			usleep(1000 * 1000);
 		}
+
 		Worker(devHandle);
 	}
 	//res = usb_release_interface(devHandle, interface->bInterfaceNumber);
