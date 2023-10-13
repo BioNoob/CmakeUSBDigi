@@ -9,12 +9,15 @@ project (CmakeUSB)
 add_executable (CmakeUSB "CmakeUSB.cpp" "CmakeUSB.h")
 
 
+if(WIN32)
+  set(LIBUSB_head lusb0_usb.h)
+else()
+  set(LIBUSB_head usb.h)
+endif()
 
-FIND_PATH(LIBUSB_INCLUDE_DIR NAMES lusb0_usb.h
+FIND_PATH(LIBUSB_INCLUDE_DIR NAMES ${LIBUSB_head}
    HINTS
-   #/usr
-   #/usr/local
-   #/opt
+   /usr/local
    ${CMAKE_SOURCE_DIR}/libusb
    PATH_SUFFIXES src
    )
@@ -23,21 +26,19 @@ FIND_PATH(LIBUSB_INCLUDE_DIR NAMES lusb0_usb.h
 if(WIN32)
   set(LIBUSB_NAME libusb0)
 else()
-  set(LIBUSB_NAME usb-1.0)
+  set(LIBUSB_NAME usb)
 endif()
 
  FIND_LIBRARY(LIBUSB_LIBRARY NAMES ${LIBUSB_NAME}
   HINTS
-  /usr
   /usr/local
-  /opt
   ${CMAKE_SOURCE_DIR}/libusb 
   PATH_SUFFIXES lib
 )  
 message(${LIBUSB_NAME})
 message(${LIBUSB_LIBRARY})
 message(${LIBUSB_INCLUDE_DIR})
-message(${CMAKE_SOURCE_DIR})
+#message(${CMAKE_SOURCE_DIR})
  #C:/Users/bigja/source/repos/CmakeUSB/MWin32/lib WORKED!!!!!
 target_include_directories(CmakeUSB PRIVATE ${LIBUSB_INCLUDE_DIR})
 target_link_libraries(CmakeUSB  PRIVATE ${LIBUSB_LIBRARY})

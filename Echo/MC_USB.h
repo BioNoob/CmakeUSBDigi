@@ -30,21 +30,10 @@ void TimeOut() {
 void OkWrite() {
   for (int i = 0; i < 2; i++) {
     digitalWrite(0, LOW);
-    LocalDelay(200);
+    LocalDelay(100);
     digitalWrite(0, HIGH);
-    LocalDelay(200);
+    LocalDelay(100);
   }
-}
-uint8_t g_GetMaskedValue(uint32_t nValue, uint32_t mask)
-{
-	nValue = nValue & mask;
-	uint32_t bMask = 1;
-	while ((mask & bMask) == 0)
-	{
-		nValue = nValue >> 1;
-		mask = mask >> 1;
-	}
-	return nValue;
 }
 void GetUvkAsp(int analog, ASP *t_asp, TUVK *t_uvk) {
   switch (*t_uvk) {
